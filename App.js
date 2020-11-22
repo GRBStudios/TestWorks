@@ -6,6 +6,7 @@ import { decode, encode } from "base-64";
 LogBox.ignoreLogs([
   "Setting a timer",
   "Animated: `useNativeDriver` was not specified.",
+  "VirtualizedLists should never be nested",
 ]);
 
 if (!global.btoa) global.btoa = encode;

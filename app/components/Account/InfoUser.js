@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text } from "react-native";
-import { Avatar, Button } from "react-native-elements";
+import { Avatar, Button, Accessory, Icon } from "react-native-elements";
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
 import { firebaseApp } from "../../utils/Firebase";
@@ -8,10 +8,12 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import Loading from "../../components/Loading";
 
+const db = firebase.firestore(firebaseApp);
+
 export default function InfoUser(props) {
   const {
     userInfo: { uid, photoURL, displayName, email },
-    userDatos,
+    userData,
     toastRef,
     setLoading,
     setLoadingText,
@@ -19,7 +21,7 @@ export default function InfoUser(props) {
 
   const [login, setLogin] = useState(null);
 
-  const changeAvatar = async () => {
+  const pickImage = async () => {
     const resultPermission = await Permissions.askAsync(
       Permissions.CAMERA_ROLL
     );
@@ -29,19 +31,24 @@ export default function InfoUser(props) {
     if (resultPermissionCamera === "denied") {
       toastRef.current.show("Es necesario aceptar los permisos de la galeria");
     } else {
-      const result = await ImagePicker.launchImageLibraryAsync({
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
+        quality: 1,
       });
-
       if (result.cancelled) {
         toastRef.current.show("Has cerrado la seleccion de imagenes");
       } else {
+        console.log("Primer result: ", result);
         uploadImage(result.uri)
           .then(() => {
+            console.log("Segundo result: ", result);
             updatePhotoUrl();
+            setLoading(false);
           })
           .catch(() => {
+            console.log("Resultado: ", result);
             toastRef.current.show("Error al actualizar el avatar.");
           });
       }
@@ -49,26 +56,28 @@ export default function InfoUser(props) {
   };
 
   const uploadImage = async (uri) => {
+    console.log("Subiendo imagen: ", uri);
     setLoadingText("Actualizando Avatar");
-    setLoading(true);
-
     const response = await fetch(uri);
     const blob = await response.blob();
-
-    const ref = firebase.storage().ref().child(`avatar/${uid}`);
+    const ref = firebase.storage().ref().child(`avatar/${userData.uid}`);
     return ref.put(blob);
   };
 
   const updatePhotoUrl = () => {
     firebase
       .storage()
-      .ref(`avatar/${uid}`)
+      .ref(`avatar/${userData.uid}`)
       .getDownloadURL()
       .then(async (response) => {
         const update = {
           photoURL: response,
         };
         await firebase.auth().currentUser.updateProfile(update);
+        ldb.collection("perfil-final").doc(userData.userId).update({
+          photoURL: response,
+        });
+
         setLoading(false);
       })
       .catch(() => {
@@ -76,26 +85,30 @@ export default function InfoUser(props) {
       });
   };
 
+  let imageURL;
+  if (photoURL) {
+    imageURL = photoURL;
+  } else {
+    imageURL =
+      "https://cdn.business2community.com/wp-content/uploads/2017/08/blank-profile-picture-973460_640.png";
+  }
   return (
     <View style={styles.viewUserInfo}>
       <Avatar
+        containerStyle={styles.userInfoAvatar}
         rounded
         size="large"
-        showEditButton
-        onEditPress={changeAvatar}
-        containerStyle={styles.userInfoAvatar}
-        source={
-          photoURL
-            ? { uri: photoURL }
-            : require("../../../assets/img/no-image.png")
-        }
-      />
+        source={{ uri: imageURL }}
+        onPress={pickImage}
+      >
+        <Accessory size={30} />
+      </Avatar>
       <View>
         <Text style={styles.displayName}>
-          {userDatos ? firebase.auth().currentUser.displayName : "Anónimo"}
+          {userData ? firebase.auth().currentUser.displayName : "Anónimo"}
         </Text>
         <Text>
-          {userDatos ? firebase.auth().currentUser.email : "Socia Login"}
+          {userData ? firebase.auth().currentUser.email : "Socia Login"}
         </Text>
       </View>
       <Button

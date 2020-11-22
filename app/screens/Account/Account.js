@@ -13,20 +13,12 @@ export default function Account() {
   const [login, setLogin] = useState(null);
   const [userData, setUserData] = useState(null);
 
-  firebase.auth().onAuthStateChanged((user) => {
-    const info = firebase.auth().currentUser;
-    if (user) {
-      info.reload().then(() => {
-        const refreshUser = firebase.auth().currentUser;
-        setUserData(refreshUser);
-        console.log("antes de: ", userDatos);
-      });
-    }
-
+  let isSubscribed = firebase.auth().onAuthStateChanged((user) => {
     !user ? setLogin(false) : setLogin(true);
+    return isSubscribed;
   });
 
-  if (login === null) return <Loading isVisible={true} text="Cargando..." />;
+  if (login === null) return <Loading isVisible={true} text="Cargando" />;
 
   return login ? <UserLogged /> : <UserGuest />;
 }

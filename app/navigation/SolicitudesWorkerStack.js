@@ -1,21 +1,20 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import Solicitudes from "../screens/Solicitudes/Cliente/Solicitudes";
-import Solicitud from "../screens/Solicitudes/Cliente/Solicitud";
-
+import SolicitudesWorker from "../screens/Solicitudes/Trabajador/SolicitudesWorker";
+import SolicitudWorker from "../screens/Solicitudes/Trabajador/SolicitudWorker";
 import AddSolicitud from "../screens/Solicitudes/AddSolicitud";
+
 const Stack = createStackNavigator();
 
-export default function SolicitudesStack() {
+export default function SolicitudesWorkerStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="solicitudes"
-        component={Solicitudes}
-        options={{ title: "Tus Solicitudes" }}
+        name="solicitudesworker"
+        component={SolicitudesWorker}
+        options={{ title: "Solicitudes Disponibles" }}
       />
-      <Stack.Screen name="solicitud" component={Solicitud} />
-
+      <Stack.Screen name="solicitudworker" component={SolicitudWorker} />
       <Stack.Screen
         name="addsolicitud"
         component={AddSolicitud}

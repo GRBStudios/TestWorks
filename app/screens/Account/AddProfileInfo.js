@@ -33,6 +33,7 @@ export default function ProfileInfoWorker(props) {
   const [isCliente, setIsCliente] = useState(null);
   const [tipoUsuario, setTipoUsuario] = useState("");
   const [userDatos, setUserDatos] = useState("");
+
   var unsuscribed = firebase.auth().onAuthStateChanged((user) => {
     setUserInfo(user);
     !userInfo ? setLogin(false) : setLogin(true);
@@ -45,13 +46,38 @@ export default function ProfileInfoWorker(props) {
       toastRef.current.show("Todos los campos del formulario son obligatorios");
     } else {
       let perfilRef = db.collection("perfil-final");
-      let response = await firebase
+      let response = await firebase.auth().currentUser.updateProfile({
+        displayName: nombres + " " + apellidos,
+      });
+
+      perfilRef.add({
+        userId: firebase.auth().currentUser.uid,
+        email: firebase.auth().currentUser.email,
+        tipoUsuario: isCliente ? "cliente" : "trabajador",
+        nombres: nombres,
+        apellidos: apellidos,
+        telefono: telefono,
+        especialidad: choosenLabel,
+        estado: 0,
+        createdAt: new Date(),
+      });
+
+      return response;
+    }
+  }
+  /*  function onSubmit() {
+    if (!nombres || !apellidos || !telefono) {
+      toastRef.current.show("Todos los campos del formulario son obligatorios");
+    } else {
+      let perfilRef = db.collection("perfil-final");
+
+      firebase
         .auth()
         .currentUser.updateProfile({
           displayName: nombres + " " + apellidos,
         })
         .then(() => {
-          let response2 = perfilRef.add({
+          perfilRef.add({
             userId: firebase.auth().currentUser.uid,
             email: firebase.auth().currentUser.email,
             tipoUsuario: isCliente ? "cliente" : "trabajador",
@@ -66,10 +92,8 @@ export default function ProfileInfoWorker(props) {
         .catch(() => {
           toastRef.current.show("Error al enviar solicitud");
         });
-
-      return response;
     }
-  }
+  } */
 
   return (
     <View style={styles.formContainer}>
