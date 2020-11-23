@@ -32,7 +32,7 @@ export default function Solicitud(props) {
   const [listaPostulantes, setListaPostulantes] = useState([]);
   //Trabajador individual
   const [trabajador, setTrabajador] = useState("");
-
+  const [idPostulacion, setIdPostulacion] = useState("");
   //Obtener dimensiones de la pantalla
   const screenWidth = Dimensions.get("window").width;
   //Inicialización de BD
@@ -58,8 +58,7 @@ export default function Solicitud(props) {
   }, [solicitud]);
 
   //Obtener trabajadores (postulantes)
-  const trabajadoresRef = db.collection("perfil-final");
-
+  /*  const trabajadoresRef = db.collection("perfil-final");
   useEffect(() => {
     let subscribe = trabajadoresRef
       .where("tipoUsuario", "==", "trabajador")
@@ -84,6 +83,31 @@ export default function Solicitud(props) {
     return () => {
       subscribe;
     };
+  }, [cantidadPostulantes]); */
+  const postulacionesRef = db.collection("postulaciones");
+  const users = [];
+  useEffect(() => {
+    let subscribe = postulacionesRef
+      .where("idSolicitud", "==", id)
+      .get()
+      .then((snapshot) => {
+        setCantidadPostulantes(snapshot.size);
+        if (snapshot.empty) {
+          console.log("No se encontraron postulaciones...");
+          return;
+        }
+        snapshot.forEach((doc) => {
+          users.push({
+            ...doc.data(),
+          });
+          setListaTrabajadores(users);
+          setIdPostulacion(doc.id);
+          console.log("Use effect ejecutado");
+        });
+      });
+    return () => {
+      subscribe;
+    };
   }, [cantidadPostulantes]);
 
   return (
@@ -92,7 +116,6 @@ export default function Solicitud(props) {
         arrayImages={solicitud.imagenes}
         height={250}
         width={screenWidth}
-        data={solicitud.imagenes}
       />
       <TitleSolicitud
         titulo={solicitud.titulo}
@@ -104,20 +127,32 @@ export default function Solicitud(props) {
         direccion={solicitud.direccion}
       />
       <Divider style={{ backgroundColor: "blue" }} />
-      <Text style={{ margin: 8, padding: 8, fontWeight: "bold", fontSize: 20 }}>
-        Postulantes
-      </Text>
-      <ListaPostulantes
-        listaTrabajadores={listaTrabajadores}
-        isLoading={isLoading}
-      />
-      <Button
-        title="TEST"
-        solicitud={solicitud}
-        onPress={() => {
-          console.log(listaPostulantes[0].nombres);
-        }}
-      />
+
+      {solicitud.estado == 0 ? (
+        <View>
+          <Text
+            style={{ margin: 8, padding: 8, fontWeight: "bold", fontSize: 20 }}
+          >
+            Postulantes
+          </Text>
+          <ListaPostulantes
+            listaTrabajadores={listaTrabajadores}
+            isLoading={isLoading}
+            navigation={navigation}
+            idPostulacion={idPostulacion}
+            idSolicitud={id}
+          />
+        </View>
+      ) : (
+        <View style={{ margin: 20 }}>
+          <Icon
+            name="speaker-notes"
+            type="material"
+            size={50}
+            color="#F7931C"
+          />
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -133,32 +168,49 @@ function TitleSolicitud(props) {
     </View>
   );
 }
-//Render Items
+//Ir a perfil
 
+//Render Items
 function ListaPostulantes(props) {
-  const { listaTrabajadores, isLoading } = props;
-  const renderItem = ({ item }) => (
-    <View style={styles.contenedor}>
-      <TouchableHighlight
-        style={styles.button}
-        key={item.userId}
-        onPress={() => console.log(item)}
-      >
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "column",
-            justifyContent: "center",
-          }}
+  const {
+    listaTrabajadores,
+    isLoading,
+    navigation,
+    idPostulacion,
+    idSolicitud,
+  } = props;
+
+  const renderItem = ({ item }) =>
+    item.estado == 0 || item.estado == 1 ? (
+      <View style={styles.contenedor}>
+        <TouchableHighlight
+          style={styles.button}
+          key={item.idPostulantes}
+          onPress={() =>
+            navigation.navigate("perfilpostulante", {
+              item,
+              idPostulacion,
+              idSolicitud,
+            })
+          }
         >
-          <Text style={styles.btnText}>
-            {item.nombres} {item.apellidos}
-          </Text>
-          <Text style={styles.btnTextSubtitle}>{item.especialidad}</Text>
-        </View>
-      </TouchableHighlight>
-    </View>
-  );
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "column",
+              justifyContent: "center",
+
+              height: 15,
+            }}
+          >
+            <Text style={styles.btnText}>
+              {item.nombres} {item.apellidos}
+            </Text>
+            <Text style={styles.btnTextSubtitle}>{item.especialidad}</Text>
+          </View>
+        </TouchableHighlight>
+      </View>
+    ) : null;
   return (
     <FlatList
       data={listaTrabajadores}

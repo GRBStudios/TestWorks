@@ -94,6 +94,7 @@ export default function SolicitudWorker(props) {
         arrayImages={solicitud.imagenes}
         height={250}
         width={screenWidth}
+        data={solicitud.imagenes}
       />
       <TitleSolicitud
         titulo={solicitud.titulo}
@@ -113,7 +114,7 @@ export default function SolicitudWorker(props) {
                 .add({
                   idSolicitud: idSol,
                   idPostulante: datosPerfil.userId,
-                  nombres: datosPerfil.apellidos,
+                  nombres: datosPerfil.nombres,
                   apellidos: datosPerfil.apellidos,
                   email: firebase.auth().currentUser.email,
                   telefono: datosPerfil.telefono,

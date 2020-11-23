@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon } from "react-native-elements";
 import SolicitudesStack from "./SolicitudesStack";
 import SolicitudesWorkerStack from "./SolicitudesWorkerStack";
-
+import BuscarStack from "./BuscarStack";
 /* import BuscarStack from "./BuscarStack";
 import TopRestaurantsStack from "./TopRestaurantsStack"; */
 import AccountStack from "./AccountStack";
@@ -113,6 +113,11 @@ export default function Navigation() {
           name="account"
           component={AccountStack}
           options={{ title: "Cuenta" }}
+        ></Tab.Screen>
+        <Tab.Screen
+          name="buscar"
+          component={BuscarStack}
+          options={{ title: "Busqueda" }}
         ></Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
