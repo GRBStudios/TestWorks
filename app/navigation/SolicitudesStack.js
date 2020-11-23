@@ -5,6 +5,7 @@ import Solicitud from "../screens/Solicitudes/Cliente/Solicitud";
 
 import AddSolicitud from "../screens/Solicitudes/AddSolicitud";
 import PerfilContactoSolicitud from "../components/Solicitudes/PerfilContactoSolicitud";
+import ChatRoom from "../screens/Solicitudes/ChatRoom";
 
 const Stack = createStackNavigator();
 
@@ -27,6 +28,11 @@ export default function SolicitudesStack() {
         name="perfilpostulante"
         component={PerfilContactoSolicitud}
         options={{ title: "Añadir Solicitud" }}
+      />
+      <Stack.Screen
+        name="chat"
+        component={ChatRoom}
+        options={{ title: "Chat" }}
       />
     </Stack.Navigator>
   );

@@ -150,6 +150,12 @@ export default function Solicitud(props) {
             type="material"
             size={50}
             color="#F7931C"
+            idSolicitud={id}
+            onPress={() =>
+              navigation.navigate("chat", {
+                id,
+              })
+            }
           />
         </View>
       )}
