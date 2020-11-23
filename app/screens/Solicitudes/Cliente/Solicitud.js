@@ -32,7 +32,7 @@ export default function Solicitud(props) {
   const [listaPostulantes, setListaPostulantes] = useState([]);
   //Trabajador individual
   const [trabajador, setTrabajador] = useState("");
-  const [idPostulacion, setIdPostulacion] = useState("");
+  const [estadoPostulacion, setEstadoPostulacion] = useState(0);
   //Obtener dimensiones de la pantalla
   const screenWidth = Dimensions.get("window").width;
   //Inicialización de BD

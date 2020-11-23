@@ -8,8 +8,9 @@ import {
   SafeAreaView,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from "react-native";
-import { Button } from "react-native-elements";
+import { Button, Icon } from "react-native-elements";
 import { firebaseApp } from "../../../utils/Firebase";
 import Carousel from "../../../components/Carousel";
 import firebase from "firebase/app";
@@ -32,6 +33,8 @@ export default function SolicitudWorker(props) {
   const [isUser, setIsUser] = useState(0);
   const [idSol, setIdSol] = useState("");
   const [perfilId, setPerfilId] = useState("");
+  const [estadoPostulacion, setEstadoPostulacion] = useState(0);
+  const [estadoSolicitud, setEstadoSolicitud] = useState(0);
   //Trabajador individual
   const [trabajador, setTrabajador] = useState("");
   //Obtener dimensiones de la pantalla
@@ -52,6 +55,7 @@ export default function SolicitudWorker(props) {
         const data = response.data();
         setSolicitud(data);
         setIdSol(id);
+        setEstadoSolicitud(data.estado);
       });
     return () => {
       subscribe;
@@ -88,6 +92,25 @@ export default function SolicitudWorker(props) {
       subscribe;
     };
   }, [isUser]);
+
+  const postulacionesRef = db.collection("postulaciones");
+  useEffect(() => {
+    let subscribe = postulacionesRef
+      .where("idPostulante", "==", firebase.auth().currentUser.uid)
+      .get()
+      .then((snapshot) => {
+        if (snapshot.empty) {
+          console.log("No se encontraron postulaciones...");
+          return;
+        }
+        snapshot.forEach((doc) => {
+          setEstadoPostulacion(doc.data().estado);
+        });
+      });
+    return () => {
+      subscribe;
+    };
+  }, []);
   return (
     <ScrollView>
       <Carousel
@@ -101,15 +124,13 @@ export default function SolicitudWorker(props) {
         descripcion={solicitud.descripcion}
       />
       <ListaPostulantes listaTrabajadores={listaTrabajadores} />
-      {bloquearPostulacion == 0 ? (
+      {estadoSolicitud === 0 ? (
         <Button
           title="Postular"
           buttonStyle={styles.btnP}
           onPress={() => {
-            if (userLogged) {
-              var solicitudesRef = db.collection("solicitudes").doc(idSol);
+            if (userLogged && estadoPostulacion == 0) {
               var postulacionRef = db.collection("postulaciones");
-              var perfilRef = db.collection("perfil-final").doc(perfilId);
               postulacionRef
                 .add({
                   idSolicitud: idSol,
@@ -121,19 +142,35 @@ export default function SolicitudWorker(props) {
                   estado: 0,
                 })
                 .then(function () {
+                  setBloquearPostulacion(1);
                   navigation.navigate("solicitudesworker");
                 });
+            } else if (userLogged && estadoPostulacion != 0) {
+              Alert.alert(
+                "Información",
+                "Usted ya ha postulado a este trabajo",
+                [{ text: "OK", onPress: () => console.log("OK Pressed") }],
+                { cancelable: false }
+              );
             }
           }}
         />
-      ) : null}
-      <Button
-        title="TEST"
-        buttonStyle={styles.btnP}
-        onPress={() => {
-          console.log("DOC ID: ", solicitud.postulantes);
-        }}
-      />
+      ) : (
+        <View>
+          <Icon
+            name="speaker-notes"
+            type="material"
+            size={50}
+            color="#F7931C"
+            idSolicitud={id}
+            onPress={() =>
+              navigation.navigate("chat", {
+                id,
+              })
+            }
+          />
+        </View>
+      )}
     </ScrollView>
   );
 }

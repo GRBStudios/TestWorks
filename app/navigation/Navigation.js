@@ -109,15 +109,18 @@ export default function Navigation() {
         ) : (
           console.log("no es cliente")
         )}
+        {login ? (
+          <Tab.Screen
+            name="buscar"
+            component={BuscarStack}
+            options={{ title: "Busqueda" }}
+          ></Tab.Screen>
+        ) : null}
+
         <Tab.Screen
           name="account"
           component={AccountStack}
           options={{ title: "Cuenta" }}
-        ></Tab.Screen>
-        <Tab.Screen
-          name="buscar"
-          component={BuscarStack}
-          options={{ title: "Busqueda" }}
         ></Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
